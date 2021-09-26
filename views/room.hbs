@@ -67,7 +67,7 @@
 
     sendForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      const formData = { roomId: 2, UserId: 2, msg: msg.value };
+      const formData = { roomId: 2, userId: 2, msg: msg.value };
       socket.emit("chatmessage", formData);
     })
 

@@ -55,13 +55,12 @@ const socket = server => {
     socket.on('chatmessage', async (data) => {
       // 預設傳入data = {roomId, userId, msg}
       const {roomId, userId, msg } = data
-
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
       user = user.toJSON()
-      console.log(data.roomId)
+      console.log(roomId)
       console.log(user)
       //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
-      io.to(data.roomId).emit(('newMessage', { user: user, msg: msg, date: new Date() }))
+      io.to(data.roomId).emit('newMessage', { user: user, msg: msg, date: new Date() })
       postChat(user, data.msg, roomId)
     })
 
