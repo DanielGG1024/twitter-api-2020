@@ -1,10 +1,9 @@
 // announce 統一設定為廣播在Msg
-// 需要個別統計公開人數?
 
 const { authenticatedSocket } = require('../middleware/auth')
 const { User, Sequelize } = require('../models')
 const socketio = require('socket.io')
-const { postChat} = require('../controllers/chatroomController')
+const { postChat, createRoom } = require('../controllers/chatroomController')
 
 
 let io
@@ -29,20 +28,16 @@ const socket = server => {
   if (!io) throw new Error('No socket io server instance')
 
   io/*.use(authenticatedSocket)*/.on('connection', socket => {
-
+    
     console.log(socket.user)
-
-
     console.log('===== connected!!! =====')
-
     const { clientsCount } = io.engine
-
     console.log('有人加入公開聊天室，目前人數:', clientsCount)
 
+    /*-----------------PublicRoom--------------------- */
     socket.on('joinPublic', async (userId) => {
       await socket.join('PublicRoom')
-      const rooms = io.of("/").adapter.rooms;
-      console.log('PublicRoom', rooms)
+      console.log('PublicRoom', io.of("/").adapter.rooms)
       console.log('UserSocketID',socket.id)
       console.log('userId', userId)
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
@@ -57,29 +52,39 @@ const socket = server => {
     })
 
     socket.on('chatmessage', async (data) => {
+      // TODO: 前端需傳roomId
       const userId = data.UserId
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
       user = user.toJSON()
-      io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
+      //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
+      io.to(data.roomId).emit(('newMessage', { user: user, msg: data.msg, date: new Date() }))
       postChat(user, data.msg)
     })
 
     socket.on('leavePublic', async(userId) => {
-      await socket.leave('PublicRoom')
-      const rooms = io.of("/").adapter.rooms;
-      console.log('LeavePublicRoom', rooms)
-      console.log(userId)
+      console.log('============leavePublic===============')
       console.log('onlineList', onlineList)
       let userIndex = onlineList.findIndex(x => x.id === Number(userId))
       if(userIndex !== -1){
         getRemoveUser(userIndex)
+        await socket.leave('PublicRoom')
+        console.log('LeavePublicRoom', io.of("/").adapter.rooms)
       }
-      console.log('-------刪除後onlineList------')
-      console.log(onlineList)
-      console.log('---clientsCount out ---')
-      console.log(clientsCount)
-      io.emit("onlineList",　onlineList)
-
+    })
+    /*-----------------PrivateRoom--------------------- */
+    socket.on('joinPrivate', async(data) => {
+      console.log('============joinPrivate===============')
+      // 預設傳入data = [1(id), 2(id)]
+      const roomData = await createRoom(data[0], data[1])
+      socket.join(roomData.id)
+      io.to(roomData.id).emit("announce",　`可以開始聊天了喔`)
+    })
+    socket.on('leavePrivate', async(data) => {
+      console.log('============leavePrivate===============')
+      // 預設傳入data = {roomId, userId}
+      await socket.leave(data.roomId)
+      console.log('LeaveRoom', io.of("/").adapter.rooms)
+      io.to(roomData.id).emit("announce",　`目前${data.userId}不在聊天室中`)
     })
   })
 }
@@ -101,7 +106,14 @@ function getRemoveUser(userIndex){
   console.log(userName,'離開')
   io.emit("announce",　` ${userName} 離開`)
   onlineList.splice(userIndex,1)
-  }
+  console.log('-------刪除後onlineList------')
+  console.log(onlineList)
+}
+// GET user's socketID
+function createPrivateId(user1, user2){
+//
+}
+
 
 
 

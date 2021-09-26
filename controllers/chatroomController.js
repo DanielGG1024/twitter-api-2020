@@ -32,6 +32,26 @@ let chatroomController = {
     } catch (err) {
       next(err)
     }
+  },
+  createRoom: async (UserId1, UserId2) => {
+    try{
+      //exist?
+      const roomData = await Room.findOne({
+        where: {
+          [Op.or]: [
+            {UserId1,UserId2},
+            {UserId1: UserId2, UserId2: UserId1}
+          ]
+        }
+      })
+      if(roomData) return roomData
+
+      //if not exist
+      return await Room.create({
+        UserId1,UserId2
+      })
+    }catch (err) { console.log(err) }
+
   }
 }
 
