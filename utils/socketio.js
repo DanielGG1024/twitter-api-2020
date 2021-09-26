@@ -47,17 +47,18 @@ const socket = server => {
       console.log(onlineList)
       console.log('---clientsCount in ---')
       console.log(clientsCount)
-      io.emit("announce", user)
+      const roomId = 1
+      io.emit("announce", { user, roomId })
     })
 
     socket.on('chatmessage', async (data) => {
-      // TODO: 前端需傳roomId
-      const userId = data.UserId
+      // 預設傳入data = {roomId, userId, msg}
+      const {roomId, userId, msg } = data
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
       user = user.toJSON()
       //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
-      io.to(data.roomId).emit(('newMessage', { user: user, msg: data.msg, date: new Date() }))
-      postChat(user, data.msg)
+      io.to(data.roomId).emit(('newMessage', { user: user, msg: msg, date: new Date() }))
+      postChat(user, data.msg, roomId)
     })
 
     socket.on('leavePublic', async(userId) => {
@@ -83,7 +84,7 @@ const socket = server => {
       // 預設傳入data = {roomId, userId}
       await socket.leave(data.roomId)
       console.log('LeaveRoom', io.of("/").adapter.rooms)
-      io.to(roomData.id).emit("announce",　`目前${data.userId}不在聊天室中`)
+      io.to(data.roomId).emit("announce",　`目前${data.userId}不在聊天室中`)
     })
   })
 }
@@ -107,10 +108,6 @@ function getRemoveUser(userIndex){
   onlineList.splice(userIndex,1)
   console.log('-------刪除後onlineList------')
   console.log(onlineList)
-}
-// GET user's socketID
-function createPrivateId(user1, user2){
-//
 }
 
 

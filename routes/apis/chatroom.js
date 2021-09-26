@@ -3,8 +3,9 @@ const router = express.Router()
 const chatroomController = require('../../controllers/chatroomController.js')
 
 
-router.get('/public', chatroomController.publicChat)
 router.get('/getHistoryMsg', chatroomController.getHistoryMsg)
+router.get('/:userId/getPrivateHistoryMsg', chatroomController.getPrivateHistoryMsg)
+
 
 
 module.exports = router

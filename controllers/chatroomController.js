@@ -2,14 +2,12 @@ const { Chat, Sequelize, User } = require('../models')
 const { Op } = Sequelize
 
 let chatroomController = {
-  publicChat: async (req, res, next) => {
-    res.send('respond with a resource.')
-  },
-  postChat: async (user, msg) => {
+  postChat: async (user, msg, roomId) => {
     try {
       return await Chat.create({
         UserId: user.id,
-        text: msg
+        text: msg,
+        RoomId: roomId,
       })
     } catch (err) { console.log(err) }
   },
@@ -17,7 +15,7 @@ let chatroomController = {
     try {
       const chat = await Chat.findAll({
         attributes: [
-          ['id', 'ChatId'], 'createdAt', 'text'
+          ['id', 'ChatId'], 'createdAt', 'text', 'roomId'
         ],
         include: [
           {
@@ -50,7 +48,28 @@ let chatroomController = {
         UserId1,UserId2
       })
     }catch (err) { console.log(err) }
-
+  },
+  getPrivateHistoryMsg: async (req, res, next) => {
+    const { roomId } = req.params
+    const roomOption = {
+        attributes: [
+          ['id', 'ChatId'], 'createdAt', 'text'
+        ],
+        include: [
+          {
+            model: User, attributes: ['id', 'name', 'avatar', 'account'],
+            where: { role: { [Op.not]: 'admin' } }
+          }],
+        raw: true,
+        nest: true
+      }
+    try {
+      if(roomId) const chat = await Chat.findByPk(roomId, roomOption)
+      else const chat = await Chat.findAll(roomOption)
+      return res.status(200).json(chat)
+    } catch (err) {
+      next(err)
+    }
   }
 }
 
