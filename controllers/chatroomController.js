@@ -51,6 +51,7 @@ let chatroomController = {
   },
   getPrivateHistoryMsg: async (req, res, next) => {
     const { roomId } = req.params
+    let chat 
     const roomOption = {
         attributes: [
           ['id', 'ChatId'], 'createdAt', 'text'
@@ -64,8 +65,8 @@ let chatroomController = {
         nest: true
       }
     try {
-      if(roomId) const chat = await Chat.findByPk(roomId, roomOption)
-      else const chat = await Chat.findAll(roomOption)
+      if(roomId) chat = await Chat.findByPk(roomId, roomOption)
+      else chat = await Chat.findAll(roomOption)
       return res.status(200).json(chat)
     } catch (err) {
       next(err)
