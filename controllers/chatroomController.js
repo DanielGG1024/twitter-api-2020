@@ -1,4 +1,4 @@
-const { Chat, Sequelize, User } = require('../models')
+const { Chat, Sequelize, User,Room } = require('../models')
 const { Op } = Sequelize
 
 let chatroomController = {
