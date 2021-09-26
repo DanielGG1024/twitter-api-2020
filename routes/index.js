@@ -13,11 +13,10 @@ module.exports = app => {
   app.use('/api/followships', followships)
   app.use('/api/chatroom', chatroom)
 
-  app.get('/', (req, res) => {
-    res.render('index')
-  })
-  app.get('/login', (req, res) => {
-    res.render('login')
-  })
+  app.get('/', (req, res) => { res.render('index') })
+  app.get('/login', (req, res) => { res.render('login') })
+  app.get('/user3', (req, res) => { res.render('user') })
+  app.get('/private', (req, res) => { res.render('private') })
+  app.get('/room', (req, res) => { res.render('room') })
   app.post('/', userController.Login)
 }

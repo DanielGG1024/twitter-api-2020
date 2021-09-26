@@ -28,6 +28,7 @@ const socket = server => {
   if (!io) throw new Error('No socket io server instance')
 
   io/*.use(authenticatedSocket)*/.on('connection', socket => {
+
     console.log(socket.user)
     console.log('===== connected!!! =====')
     const { clientsCount } = io.engine
@@ -54,8 +55,11 @@ const socket = server => {
     socket.on('chatmessage', async (data) => {
       // 預設傳入data = {roomId, userId, msg}
       const {roomId, userId, msg } = data
+
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
       user = user.toJSON()
+      console.log(data.roomId)
+      console.log(user)
       //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
       io.to(data.roomId).emit(('newMessage', { user: user, msg: msg, date: new Date() }))
       postChat(user, data.msg, roomId)
@@ -76,6 +80,7 @@ const socket = server => {
       console.log('============joinPrivate===============')
       // 預設傳入data = [1(id), 2(id)]
       const roomData = await createRoom(data[0], data[1])
+      console.log(roomData.id)
       socket.join(roomData.id)
       io.to(roomData.id).emit("announce",　`可以開始聊天了喔`)
     })

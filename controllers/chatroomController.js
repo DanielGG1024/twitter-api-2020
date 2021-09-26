@@ -1,4 +1,6 @@
 const { Chat, Sequelize, User, Room, Member} = require('../models')
+
+
 const { Op } = Sequelize
 
 let chatroomController = {
@@ -22,6 +24,7 @@ let chatroomController = {
             model: User, attributes: ['id', 'name', 'avatar', 'account'],
             where: { role: { [Op.not]: 'admin' } }
           }],
+        order: [['createdAt', 'ASC']],
         raw: true,
         nest: true
       })

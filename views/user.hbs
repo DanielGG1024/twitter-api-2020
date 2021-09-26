@@ -1,0 +1,23 @@
+<h1>User3</h1>
+<a href="/private"><div id="User3"><img src="https://cdn-icons-png.flaticon.com/512/893/893268.png" alt=""></div></a>
+
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+  const socket = io.connect('http://localhost:3000', {})
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const User3 = document.getElementById("User3")
+
+    socket.on("connect", function () {
+      console.log('connect')
+    })
+
+    User3.addEventListener('click', (e) => {
+      socket.emit("joinPrivate", [2, 3])
+    })
+
+  })
+</script>
