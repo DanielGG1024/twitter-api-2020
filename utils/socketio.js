@@ -1,11 +1,9 @@
 // announce 統一設定為廣播在Msg
-// 需要個別統計公開人數?
-//PrivateRoom name 不可以使用socketID
 
 const { authenticatedSocket } = require('../middleware/auth')
 const { User, Sequelize } = require('../models')
 const socketio = require('socket.io')
-const { postChat} = require('../controllers/chatroomController')
+const { postChat, createRoom } = require('../controllers/chatroomController')
 
 
 let io
@@ -53,10 +51,12 @@ const socket = server => {
     })
 
     socket.on('chatmessage', async (data) => {
+      // TODO: 前端需傳roomId
       const userId = data.UserId
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
       user = user.toJSON()
-      io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
+      //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
+      io.to(data.roomId).emit(('newMessage', { user: user, msg: data.msg, date: new Date() }))
       postChat(user, data.msg)
     })
 
@@ -72,18 +72,16 @@ const socket = server => {
     })
     /*-----------------PrivateRoom--------------------- */
     socket.on('joinPrivate', async(userId) => {
-      //兩人UserId
-      createPrivateId(user1, user2)
-      //加入私人通道
-      await socket.join('PrivateRoom')
-      console.log('-------刪除後onlineList------')
-      console.log(onlineList)
-      console.log('---clientsCount out ---')
-      console.log(clientsCount)
-      io.emit("onlineList",　onlineList)
-
+      console.log('============joinPrivate===============')
+      const roomData = await createRoom(userId1, userId2)
+      socket.join(roomData.id)
     })
-
+    socket.on('leavePrivate', async(data) => {
+      console.log('============leavePrivate===============')
+      // data 中有roomId
+      await socket.leave(data.roomId)
+      console.log('LeaveRoom', io.of("/").adapter.rooms)
+    })
   })
 }
 
