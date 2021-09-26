@@ -71,16 +71,19 @@ const socket = server => {
       }
     })
     /*-----------------PrivateRoom--------------------- */
-    socket.on('joinPrivate', async(userId) => {
+    socket.on('joinPrivate', async(data) => {
       console.log('============joinPrivate===============')
-      const roomData = await createRoom(userId1, userId2)
+      // 預設傳入data = [1(id), 2(id)]
+      const roomData = await createRoom(data[0], data[1])
       socket.join(roomData.id)
+      io.to(roomData.id).emit("announce",　`可以開始聊天了喔`)
     })
     socket.on('leavePrivate', async(data) => {
       console.log('============leavePrivate===============')
-      // data 中有roomId
+      // 預設傳入data = {roomId, userId}
       await socket.leave(data.roomId)
       console.log('LeaveRoom', io.of("/").adapter.rooms)
+      io.to(roomData.id).emit("announce",　`目前${data.userId}不在聊天室中`)
     })
   })
 }
