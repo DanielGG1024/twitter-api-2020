@@ -1,4 +1,4 @@
-const { Chat, Sequelize, User } = require('../models')
+const { Chat, Sequelize, User, Room, Member} = require('../models')
 const { Op } = Sequelize
 
 let chatroomController = {
@@ -49,9 +49,27 @@ let chatroomController = {
       })
     }catch (err) { console.log(err) }
   },
+  getPrivateChatMember: async (req, res, next) => {
+    try{
+      const { userId } = req.params
+      roomOption = {
+        attributes:['RoomId'],
+        where: { [Op.or]: [{ UserId1: userId, UserId2: userId }] },
+        include: [
+          { 
+            model: User, 
+            attributes: ['id', 'name', 'avatar', 'account'], 
+          }
+        ]
+      }
+      const privateChatMemberData = await Room.findByPk(userId, roomOption)
+      return res.status(200).json(privateChatMemberData)
+    }catch(err) {
+      console.log(err)
+    }
+  },
   getPrivateHistoryMsg: async (req, res, next) => {
     const { roomId } = req.params
-    let chat 
     const roomOption = {
         attributes: [
           ['id', 'ChatId'], 'createdAt', 'text'
@@ -65,8 +83,7 @@ let chatroomController = {
         nest: true
       }
     try {
-      if(roomId) chat = await Chat.findByPk(roomId, roomOption)
-      else chat = await Chat.findAll(roomOption)
+      const chat = await Chat.findByPk(roomId, roomOption)
       return res.status(200).json(chat)
     } catch (err) {
       next(err)
