@@ -45,7 +45,7 @@ const socket = server => {
       user = user.toJSON()
       console.log('user',user)
       addUser(user)
-      console.log('--------')
+      console.log('----onlineList----')
       console.log(onlineList)
       console.log('---clientsCount in ---')
       console.log(clientsCount)
@@ -76,6 +76,11 @@ const socket = server => {
       createPrivateId(user1, user2)
       //加入私人通道
       await socket.join('PrivateRoom')
+      console.log('-------刪除後onlineList------')
+      console.log(onlineList)
+      console.log('---clientsCount out ---')
+      console.log(clientsCount)
+      io.emit("onlineList",　onlineList)
 
     })
 
@@ -106,6 +111,7 @@ function getRemoveUser(userIndex){
 function createPrivateId(user1, user2){
 //
 }
+
 
 
 
