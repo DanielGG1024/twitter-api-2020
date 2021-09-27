@@ -14,8 +14,10 @@ const socket = server => {
   io = socketio(server, {
     cors: {
       origin: [
+        'https://danielgg1024.github.io/twitter-front-end-vue/',
         'http://localhost:3000',
         'http://localhost:8080',
+        'https://tranquil-crag-64775.herokuapp.com/'
       ],
       methods: ['GET', 'POST'],
       transports: ['websocket', 'polling'],
