@@ -18,7 +18,7 @@ module.exports = app => {
   app.get('/', (req, res) => { res.render('index') })
   app.get('/login', (req, res) => { res.render('login') })
   app.get('/private/:userId', chatroomController.getPrivateChatMember)
-  app.get('/room/:roomId', chatroomController.getPrivateHistoryMsg)
+  app.post('/room/:roomId', chatroomController.getPrivateHistoryMsg)
   app.post('/private', userController.LoginPrivate)
   app.post('/', userController.Login)
 

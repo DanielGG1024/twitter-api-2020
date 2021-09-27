@@ -1,5 +1,6 @@
 <h1>Private Chat room</h1>
-
+登入者ID:  {{userId}}
+聊天室ID: {{roomId}}
 <div id="container">
   <div id="left">
     <div id="user">
@@ -62,12 +63,12 @@
 
     })
     quit.addEventListener('click', (e) => {
-      socket.emit("leavePrivate", { roomId: 2, userId: 2 })
+      socket.emit("leavePrivate", { roomId: {{ roomId }}, userId: {{ userId }} })
     })
 
     sendForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      const formData = { roomId: {{ roomId }}, UserId: 2, msg: msg.value };
+      const formData = { roomId: {{ roomId }}, UserId: {{ userId }}, msg: msg.value };
       socket.emit("chatmessage", formData);
     })
 

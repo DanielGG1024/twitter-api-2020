@@ -94,7 +94,7 @@ let chatroomController = {
       console.log('-----------privateMember-------')
       console.log(privateChatMemberData)
       
-      return res.render('private',{ privateChatMemberData: privateChatMemberData })
+      return res.render('private',{ privateChatMemberData, userId })
       return res.status(200).json(privateChatMemberData)
     }catch(err) {
       console.log(err)
@@ -102,8 +102,8 @@ let chatroomController = {
   },
   getPrivateHistoryMsg: async (req, res, next) => {
     const { roomId } = req.params
-    console.log('身分', req.body)
-    try {
+    const { userId } = req.body //之後前端用登入者取得
+    try {//TODO感覺要串member
       const chat = await Chat.findAll({
         where: { roomId },
         attributes: [
@@ -113,13 +113,14 @@ let chatroomController = {
           {
             model: User, attributes: ['id', 'name', 'avatar', 'account'],
             where: { role: { [Op.not]: 'admin' } }
-          }],
+          },
+        ],
         order: [['createdAt', 'ASC']],
         raw: true,
         nest: true
       })
       console.log(chat)
-      return res.render('privateRoom',{ chat, roomId })
+      return res.render('privateRoom',{ chat, roomId, userId })
       return res.status(200).json(chat)
     } catch (err) {
       next(err)
