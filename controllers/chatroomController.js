@@ -36,6 +36,7 @@ let chatroomController = {
   createRoom: async (UserId1, UserId2) => {
     try{
       //exist?
+      //TODO if UserId1===UserId2
       const roomData = await Room.findOne({
         where: {
           [Op.or]: [
@@ -55,17 +56,45 @@ let chatroomController = {
   getPrivateChatMember: async (req, res, next) => {
     try{
       const { userId } = req.params
-      roomOption = {
-        attributes:['RoomId'],
-        where: { [Op.or]: [{ UserId1: userId, UserId2: userId }] },
+      const data = await Room.findAll({
+        attributes: ['id', 'UserId1', 'UserId2'],
+        where: {
+          [Op.or]: { UserId1: userId, UserId2: userId },
+        },
         include: [
           { 
-            model: User, 
-            attributes: ['id', 'name', 'avatar', 'account'], 
+            model: Member,
+            where: { UserId: { [Op.not]: userId } },
+            attributes: ['UserId'],
+            include: [
+              { 
+                model: User,
+                attributes: ['id','name', 'account', 'avatar'],
+              }
+            ]
+          },
+          { model: Chat,
+            where: { UserId: { [Op.not]: userId } },
           }
-        ]
-      }
-      const privateChatMemberData = await Room.findByPk(userId, roomOption)
+        ],
+/*         order: [
+          [
+            Sequelize.literal('(select text from Chat where Chat.RoomId = Room.id order by Chat.createdAt DESC LIMIT 1)'),
+            'DESC'
+          ]
+        ], */
+        nest: true,
+        raw: true
+      })
+      const privateChatMemberData = data.map(i => ({
+        roomId: i.id,
+        userId: userId,
+        chatMemberData: i.Members.User,
+      }))
+      console.log('-----------privateMember-------')
+      console.log(privateChatMemberData)
+      
+      return res.render('private',{ privateChatMemberData: privateChatMemberData })
       return res.status(200).json(privateChatMemberData)
     }catch(err) {
       console.log(err)
@@ -73,25 +102,30 @@ let chatroomController = {
   },
   getPrivateHistoryMsg: async (req, res, next) => {
     const { roomId } = req.params
-    const roomOption = {
+    console.log('身分', req.body)
+    try {
+      const chat = await Chat.findAll({
+        where: { roomId },
         attributes: [
-          ['id', 'ChatId'], 'createdAt', 'text'
+          ['id', 'ChatId'], 'createdAt', 'text', 'RoomId'
         ],
         include: [
           {
             model: User, attributes: ['id', 'name', 'avatar', 'account'],
             where: { role: { [Op.not]: 'admin' } }
           }],
+        order: [['createdAt', 'ASC']],
         raw: true,
         nest: true
-      }
-    try {
-      const chat = await Chat.findByPk(roomId, roomOption)
+      })
+      console.log(chat)
+      return res.render('privateRoom',{ chat, roomId })
       return res.status(200).json(chat)
     } catch (err) {
       next(err)
     }
-  }
+  },
+
 }
 
 module.exports = chatroomController

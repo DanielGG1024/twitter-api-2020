@@ -1,3 +1,11 @@
-<p>lots of private
-</p>
-<a href="/room">choose 1</a>
+<p>lots of private Member</p>
+
+
+<div id="user">
+  {{#each privateChatMemberData}}
+  <div class="img-wrapper">
+    <a href="/room/{{this.roomId}}"><img src="{{this.chatMemberData.avatar}}" width="50px" alt=""></a>
+  </div>
+  <div class="user-name">{{this.chatMemberData.name}}</div>
+  {{/each}}
+</div>

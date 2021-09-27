@@ -1,5 +1,12 @@
-<h1>User3</h1>
-<a href="/private"><div id="User3"><img src="https://cdn-icons-png.flaticon.com/512/893/893268.png" alt=""></div></a>
+
+<h1>click User Mail icon</h1>
+<h2>我是{{user.name}}，我的ID是{{user.id}}</h2>
+
+
+<a href="/private/{{user.id}}">
+<div id="User3"><img src="https://cdn-icons-png.flaticon.com/512/893/893268.png" width="100px"alt=""></div></a>
+
+<p>{{privateChatMemberData}}</p>
 
 
 
@@ -9,14 +16,14 @@
   const socket = io.connect('http://localhost:3000', {})
 
   document.addEventListener("DOMContentLoaded", () => {
-    const User3 = document.getElementById("User3")
+    const User3 = document.getElementById("User3") //id4
 
     socket.on("connect", function () {
       console.log('connect')
     })
-
+    // TODO
     User3.addEventListener('click', (e) => {
-      socket.emit("joinPrivate", [2, 3])
+      socket.emit("joinPrivate", [4, 2])
     })
 
   })

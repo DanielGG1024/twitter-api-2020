@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const imgur = require('imgur-node-api')
 const IMGUR_CLIENT_ID = process.env.IMGUR_CLIENT_ID
+const helpers = require('../_helpers')
 
 const { User, Tweet, Like, Sequelize, Reply } = require('../models')
 const { Op } = Sequelize
@@ -442,6 +443,40 @@ let userController = {
       const payload = { id: user.id }
       const token = jwt.sign(payload, process.env.JWT_SECRET)
       return res.render('index',{
+        token: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+          isAdmin: user.isAdmin
+        }
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+  LoginPrivate: async (req, res, next) => {
+    try {
+      const { email, password } = req.body
+      // 檢查必要資料
+      if (!email.trim() || !password.trim()) {
+        return res.json({ status: 'error', message: "Required fields didn't exist" })
+      }
+
+      const user = await User.findOne({ where: { email } })
+
+      if (!user) return res.status(401).json({ status: 'error', message: 'No such user found' })
+
+      if (user.role === 'admin') return res.status(401).json({ status: 'error', message: 'No such user found, admin can not login.' })
+
+      if (!bcrypt.compareSync(password, user.password)) {
+        return res.status(401).json({ status: 'error', message: 'Passwords did not match' })
+      }
+      // 簽發 token
+      const payload = { id: user.id }
+      const token = jwt.sign(payload, process.env.JWT_SECRET)
+      return res.render('user',{
         token: token,
         user: {
           id: user.id,
