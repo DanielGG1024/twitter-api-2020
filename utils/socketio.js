@@ -56,7 +56,6 @@ const socket = server => {
 
     socket.on('chatmessage', async (data) => {
       // 預設傳入data = {roomId, userId, msg}
-
       const { roomId, userId, msg } = data
       console.log(data)
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
