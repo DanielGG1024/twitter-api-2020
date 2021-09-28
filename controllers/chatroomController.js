@@ -58,22 +58,22 @@ let chatroomController = {
       const { userId } = req.params
       const data = await Room.findAll({
         attributes: [['id', 'RoomId'], 'UserId1', 'UserId2',
-          [Sequelize.literal('(SELECT text FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'text'
-          ],
-          [Sequelize.literal('(SELECT createdAt FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'createdAt'
-          ]],
+        [Sequelize.literal('(SELECT text FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'text'
+        ],
+        [Sequelize.literal('(SELECT createdAt FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'createdAt'
+        ]],
         where: {
           [Op.or]: { UserId1: userId, UserId2: userId },
         },
         include: [{
-            model: Member,
-            where: { UserId: { [Op.not]: userId } },
-            attributes: ['UserId'],
-            include: [{
-                model: User,
-                attributes: ['id', 'name', 'account', 'avatar'],
-              }]
-          }],
+          model: Member,
+          where: { UserId: { [Op.not]: userId } },
+          attributes: ['UserId'],
+          include: [{
+            model: User,
+            attributes: ['id', 'name', 'account', 'avatar'],
+          }]
+        }],
         order: [[[Sequelize.literal('createdAt'), 'DESC']],],
         nest: true,
         raw: true
