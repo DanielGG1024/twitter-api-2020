@@ -56,12 +56,14 @@ const socket = server => {
 
     socket.on('chatmessage', async (data) => {
       // 預設傳入data = {roomId, userId, msg}
-      const {roomId, userId, msg } = data
+
+      const { roomId, userId, msg } = data
+      console.log(data)
       let user = await User.findByPk(userId, { attributes: ['id', 'name', 'account', 'avatar'] })
+      console.log(user)
       user = user.toJSON()
       console.log(roomId)
       console.log(user)
-      //io.emit('newMessage', { user: user, msg: data.msg, date: new Date() })
       io.to(data.roomId).emit('newMessage', { user: user, msg: msg, date: new Date() })
       postChat(user, data.msg, roomId)
     })
@@ -79,7 +81,7 @@ const socket = server => {
     /*-----------------PrivateRoom--------------------- */
     socket.on('joinPrivate', async(data) => {
       console.log('============joinPrivate===============')
-      // 預設傳入data = [1(id), 2(id)]
+      // 預設傳入data = [2(id), 4(id)]
       const roomData = await createRoom(data[0], data[1])
       console.log(roomData.id)
       socket.join(roomData.id)

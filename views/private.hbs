@@ -1,3 +1,16 @@
-<p>lots of private
-</p>
-<a href="/room">choose 1</a>
+<p>lots of private Member</p>
+
+我的ID是{{userId}}
+
+<div id="user">
+  {{#each privateChatMemberData}}
+  <form action="/room/{{this.roomId}}" method="POST">
+  <div class="img-wrapper">
+    <input type="text" name="userId" value={{userId}}>
+    <img src="{{this.chatMemberData.avatar}}" width="50px" alt=""></a>
+  </div>
+  <div class="user-name">{{this.chatMemberData.name}}</div>
+  <input type="submit" value="房間ID: {{roomId}}">
+  </form>
+  {{/each}}
+</div>

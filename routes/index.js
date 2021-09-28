@@ -4,6 +4,8 @@ const tweets = require('./apis/tweets')
 const followships = require('./apis/followships')
 const chatroom = require('./apis/chatroom')
 const userController = require('../controllers/userController')
+const chatroomController = require('../controllers/chatroomController')
+
 
 
 module.exports = app => {
@@ -15,8 +17,9 @@ module.exports = app => {
 
   app.get('/', (req, res) => { res.render('index') })
   app.get('/login', (req, res) => { res.render('login') })
-  app.get('/user3', (req, res) => { res.render('user') })
-  app.get('/private', (req, res) => { res.render('private') })
-  app.get('/room', (req, res) => { res.render('room') })
+  app.get('/private/:userId', chatroomController.getPrivateChatMember)
+  app.post('/room/:roomId', chatroomController.getPrivateHistoryMsg)
+  app.post('/private', userController.LoginPrivate)
   app.post('/', userController.Login)
+
 }
