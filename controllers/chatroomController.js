@@ -1,4 +1,4 @@
-const { Chat, Sequelize, User, Room, Member} = require('../models')
+const { Chat, Sequelize, User, Room, Member } = require('../models')
 
 
 const { Op } = Sequelize
@@ -34,69 +34,65 @@ let chatroomController = {
     }
   },
   createRoom: async (UserId1, UserId2) => {
-    try{
+    try {
       //exist?
       //TODO if UserId1===UserId2
       const roomData = await Room.findOne({
         where: {
           [Op.or]: [
-            {UserId1,UserId2},
-            {UserId1: UserId2, UserId2: UserId1}
+            { UserId1, UserId2 },
+            { UserId1: UserId2, UserId2: UserId1 }
           ]
         }
       })
-      if(roomData) return roomData
+      if (roomData) return roomData
 
       //if not exist
       return await Room.create({
-        UserId1,UserId2
+        UserId1, UserId2
       })
-    }catch (err) { console.log(err) }
+    } catch (err) { console.log(err) }
   },
   getPrivateChatMember: async (req, res, next) => {
-    try{
+    try {
       const { userId } = req.params
       const data = await Room.findAll({
-        attributes: ['id', 'UserId1', 'UserId2'],
+        attributes: [['id', 'RoomId'], 'UserId1', 'UserId2',
+          [Sequelize.literal('(SELECT text FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'text'
+          ],
+          [Sequelize.literal('(SELECT createdAt FROM Chats WHERE Chats.RoomId = Room.id order by Chats.createdAt DESC LIMIT 1)'), 'createdAt'
+          ]],
         where: {
           [Op.or]: { UserId1: userId, UserId2: userId },
         },
-        include: [
-          { 
+        include: [{
             model: Member,
             where: { UserId: { [Op.not]: userId } },
             attributes: ['UserId'],
-            include: [
-              { 
+            include: [{
                 model: User,
-                attributes: ['id','name', 'account', 'avatar'],
-              }
-            ]
-          },
-          { model: Chat,
-            where: { UserId: { [Op.not]: userId } },
-          }
-        ],
-/*         order: [
-          [
-            Sequelize.literal('(select text from Chat where Chat.RoomId = Room.id order by Chat.createdAt DESC LIMIT 1)'),
-            'DESC'
-          ]
-        ], */
+                attributes: ['id', 'name', 'account', 'avatar'],
+              }]
+          }],
+        order: [[[Sequelize.literal('createdAt'), 'DESC']],],
         nest: true,
         raw: true
       })
+      console.log('----data---')
+      console.log(data)
       const privateChatMemberData = data.map(i => ({
-        roomId: i.id,
+        roomId: i.RoomId,
         userId: userId,
+        text: i.text,
+        createdAt: i.createdAt,
         chatMemberData: i.Members.User,
       }))
       console.log('-----------privateMember-------')
       console.log(privateChatMemberData)
-      
-      return res.render('private',{ privateChatMemberData, userId })
+
+      return res.render('private', { privateChatMemberData, userId })
       return res.status(200).json(privateChatMemberData)
-    }catch(err) {
+    } catch (err) {
       console.log(err)
     }
   },
@@ -120,7 +116,7 @@ let chatroomController = {
         nest: true
       })
       console.log(chat)
-      return res.render('privateRoom',{ chat, roomId, userId })
+      // return res.render('privateRoom', { chat, roomId, userId })
       return res.status(200).json(chat)
     } catch (err) {
       next(err)
