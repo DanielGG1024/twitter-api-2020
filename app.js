@@ -4,7 +4,6 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const exphbs = require('express-handlebars')
 
-
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config()
 }
@@ -13,10 +12,8 @@ const app = express()
 // use express to handle http server
 const server = require('http').createServer(app)
 
-
 const passport = require('./config/passport')
 const port = process.env.PORT || 3000
-
 
 
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))

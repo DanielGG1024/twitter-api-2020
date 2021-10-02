@@ -14,7 +14,7 @@ const tweetController = {
         include: [
           { model: Like, attributes: [] },
           { model: Reply, attributes: [] },
-          { model: User, attributes: ['id', 'name', 'avatar', 'account'], where: { role: { [Op.not]: 'admin' } }, }
+          { model: User, attributes: ['id', 'name', 'avatar', 'account'], where: { role: { [Op.not]: 'admin' } },}
         ],
         order: [['createdAt', 'DESC']],
         raw: true,
@@ -32,16 +32,10 @@ const tweetController = {
   getTweet: async (req, res, next) => {
     try {
       const { id } = req.params
-      let tweet = await Tweet.findByPk(id, {
-        attributes: ['id', 'UserId', 'description', 'createdAt', 'updatedAt',
-          [Sequelize.literal('count(distinct Likes.id)'), 'likeCounts'],
-          [Sequelize.literal('count(distinct Replies.id)'), 'replyCounts'],
-        ],
-        include: [
-          { model: User, attributes: ['name', 'avatar', 'account'] },
-          { model: Reply, attributes: [] },
-          { model: Like, attributes: [] },]
-      })
+      let tweet = await Tweet.findByPk(id,
+        {
+          include: [User, Like, Reply]
+        })
 
       if (!tweet) {
         return res.status(409).json({
@@ -49,8 +43,22 @@ const tweetController = {
           message: 'Can not find this tweet!'
         })
       }
-      tweet = tweet.toJSON()
-      tweet.isLiked = req.user.LikedTweets ? req.user.LikedTweets.map(like => like.id).includes(tweet.id) : null
+
+      tweet = {
+        id: tweet.id,
+        UserId: tweet.UserId,
+        description: tweet.description,
+        createdAt: tweet.createdAt,
+        updatedAt: tweet.updatedAt,
+        replyCounts: tweet.Replies.length,
+        likeCounts: tweet.Likes.length,
+        isLiked: req.user.LikedTweets ? req.user.LikedTweets.map(like => like.id).includes(tweet.id) : null,
+        user: {
+          name: tweet.User.name,
+          avatar: tweet.User.avatar,
+          account: tweet.User.account,
+        }
+      }
       return res.status(200).json(tweet)
     } catch (err) {
       next(err)
